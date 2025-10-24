@@ -1,49 +1,43 @@
-# CI/CD Pipeline pour le projet 3-tier architecture
-# Ce workflow automatise les tests et la validation du code backend Spring Boot
-# Il se déclenche sur les push et pull requests vers les branches principales
 name: CI devops 2025
 
-# Configuration des déclencheurs du pipeline
+# configuration des déclencheurs du pipeline
 on:
   push:
     branches:
-      - master    # Branche de production
-      - develop   # Branche de développement
+      - master    
+      - develop   
   pull_request:
     branches:
-      - master    # Validation des PR vers production
-      - develop   # Validation des PR vers développement
+      - master   
+      - develop   
 
 jobs:
-  # Job de test du backend Spring Boot
+  # test du backend Spring Boot
   test-backend:
-    runs-on: ubuntu-24.04  # Environnement Ubuntu LTS
+    runs-on: ubuntu-24.04  
 
     steps:
-      # Récupération du code source depuis le repository
+      # récupération du code source depuis le repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Configuration de l'environnement Java avec Maven
+      # configuration de l'environnement Java avec Maven
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin    # Distribution Eclipse Temurin (OpenJDK)
-          java-version: '21'        # Version Java 21 LTS
-          cache: maven             # Cache Maven pour accélérer les builds
+          distribution: temurin   
+          java-version: '21'        
+          cache: maven            
 
-      # Affichage des versions des outils pour debugging
+      # affichage des versions des outils pour debugging
       - name: Show tool versions
         run: |
           java -version
           mvn -v
           docker --version
 
-      # Build et exécution des tests avec Maven
-      # -B : mode batch (non-interactif)
-      # -ntp : no transfer progress (réduction des logs)
-      # clean : nettoyage des artefacts précédents
-      # verify : exécution des tests unitaires et d'intégration
+      #build et exécution des tests avec Maven
+
       - name: Build and test with Maven
         run: |
           cd simpleapi  # le pom.xml est dans ce dossier
