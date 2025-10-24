@@ -32,5 +32,7 @@ jobs:
           docker --version
 
       - name: Build and test with Maven
-        run: mvn -B -ntp clean verify
+        run: |
+          cd simpleapi
+          mvn -B -ntp clean verify
     
