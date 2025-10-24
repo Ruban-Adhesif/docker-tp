@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  database:
+    build:
+      context: ./db
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: usr
+      POSTGRES_PASSWORD: pwd
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - net-data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./simpleapi
+    env_file:
+      - ./simpleapi/.env
+    environment:
+      POSTGRES_HOST: database
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - net-front
+      - net-data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  httpd:
+    build:
+      context: ./http
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - net-front
+    restart: unless-stopped
+
+networks:
+  net-front: {}
+  net-data: {}
+
+volumes:
+  pgdata: {}
