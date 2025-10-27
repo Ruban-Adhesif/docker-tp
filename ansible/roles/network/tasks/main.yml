@@ -1,0 +1,9 @@
+- name: Create backend network
+  community.docker.docker_network:
+    name: "{{ back_network }}"
+    state: present
+
+- name: Create frontend network
+  community.docker.docker_network:
+    name: "{{ front_network }}"
+    state: present

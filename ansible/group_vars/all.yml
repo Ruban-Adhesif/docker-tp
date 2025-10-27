@@ -1,0 +1,21 @@
+back_network: my3tier_back
+front_network: my3tier_front
+
+db_volume: my3tier_pgdata
+
+db_image: rubbns/tp-devops-database
+app_image: rubbns/tp-devops-simple-api
+proxy_image: rubbns/tp-devops-http
+
+db_name: database
+app_name: backend
+proxy_name: httpd
+
+db_name_var: db
+db_user: usr
+db_password: pwd
+
+app_port: 8080
+proxy_port: 80
+
+ansible_python_interpreter: /usr/bin/python3

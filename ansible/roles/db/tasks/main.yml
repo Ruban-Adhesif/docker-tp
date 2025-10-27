@@ -1,0 +1,27 @@
+- name: Create database volume
+  community.docker.docker_volume:
+    name: "{{ db_volume }}"
+    state: present
+
+- name: Launch database container
+  community.docker.docker_container:
+    name: "{{ db_name }}"
+    image: "{{ db_image }}"
+    pull: yes
+    restart_policy: unless-stopped
+    env:
+      POSTGRES_DB: "{{ db_name_var }}"
+      POSTGRES_USER: "{{ db_user }}"
+      POSTGRES_PASSWORD: "{{ db_password }}"
+    networks:
+      - name: "{{ back_network }}"
+        aliases: 
+          - "{{ db_name }}"
+    volumes:
+      - "{{ db_volume }}:/var/lib/postgresql/data"
+    state: started
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{ db_user }} -d {{ db_name_var }}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

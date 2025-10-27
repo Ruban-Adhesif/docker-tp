@@ -1,0 +1,82 @@
+- hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    docker_arch_map:
+      x86_64: amd64
+      aarch64: arm64
+      armv7l: armhf
+    docker_arch: "{{ docker_arch_map.get(ansible_facts['architecture'], 'amd64') }}"
+    docker_codename: "{{ ansible_facts['distribution_release'] | lower }}"  # ex: bookworm, bullseye
+
+  tasks:
+    - name: Install prerequisites (apt + HTTPS + tools)
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - apt-transport-https
+          - lsb-release
+          - python3
+          - python3-pip
+          - python3-venv
+        update_cache: yes
+        state: present
+
+    - name: Ensure keyrings dir exists
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Download Docker’s official GPG key
+      get_url:
+        url: https://download.docker.com/linux/debian/gpg
+        dest: /etc/apt/keyrings/docker.gpg
+        mode: "0644"
+
+    - name: Add Docker apt repository (stable)
+      copy:
+        dest: /etc/apt/sources.list.d/docker.list
+        mode: "0644"
+        content: |
+          deb [arch={{ docker_arch }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian {{ docker_codename }} stable
+
+    - name: Update apt cache after adding repo
+      apt:
+        update_cache: yes
+
+    - name: Install Docker Engine and plugins
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Ensure Docker service is enabled and running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Create a virtualenv for Docker SDK (optional)
+      command: python3 -m venv /opt/docker_venv
+      args:
+        creates: /opt/docker_venv
+
+    - name: Install Docker SDK for Python in the venv (optional)
+      command: /opt/docker_venv/bin/pip install docker
+
+    - name: Check docker version
+      command: docker --version
+      register: docker_version_cmd
+      changed_when: false
+
+    - name: Show docker version
+      debug:
+        var: docker_version_cmd.stdout

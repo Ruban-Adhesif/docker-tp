@@ -1,0 +1,8 @@
+all:
+  vars:
+    ansible_user: admin
+    ansible_ssh_private_key_file: /Users/rubenbensaisrueda/my-3tier/data/id_rsa
+  children:
+    prod:
+      hosts:
+        ruben.bensais--rueda.takima.cloud:

@@ -1,0 +1,43 @@
+name: Auto Deploy on Docker Hub Push
+
+on:
+  repository_dispatch:
+    types: [docker-image-updated]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Ansible
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ansible
+        
+    - name: Install Ansible collections
+      run: |
+        ansible-galaxy collection install community.docker
+        
+    - name: Create SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ruben.bensais--rueda.takima.cloud >> ~/.ssh/known_hosts
+        
+    - name: Pull latest images
+      run: |
+        ssh -i ~/.ssh/id_rsa admin@ruben.bensais--rueda.takima.cloud "docker pull rubbns/tp-devops-database && docker pull rubbns/tp-devops-simple-api && docker pull rubbns/tp-devops-http"
+        
+    - name: Restart services
+      run: |
+        ssh -i ~/.ssh/id_rsa admin@ruben.bensais--rueda.takima.cloud "docker restart database backend httpd"
+        
+    - name: Verify deployment
+      run: |
+        sleep 30
+        curl -f http://ruben.bensais--rueda.takima.cloud/actuator/health || exit 1
+        echo "✅ Auto-deployment successful!"

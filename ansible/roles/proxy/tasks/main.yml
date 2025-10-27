@@ -1,0 +1,13 @@
+- name: Launch HTTP proxy container
+  community.docker.docker_container:
+    name: "{{ proxy_name }}"
+    image: "{{ proxy_image }}"
+    pull: yes
+    restart_policy: unless-stopped
+    published_ports:
+      - "{{ proxy_port }}:80"
+    networks:
+      - name: "{{ front_network }}"
+        aliases:
+          - "{{ proxy_name }}"
+    state: started
