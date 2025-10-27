@@ -6,9 +6,7 @@ on:
       - master
       - develop
   pull_request:
-    branches:
-      - master
-      - develop
+
 
 jobs:
   test-backend:
@@ -25,7 +23,16 @@ jobs:
           cache: maven
 
       - name: Build and test with Maven
-        run: mvn -B -ntp --file simpleapi/pom.xml clean verify
+        run: mvn --file simpleapi/pom.xml clean verify
+
+      - name: SonarCloud analysis
+        run: >
+          mvn -B verify sonar:sonar
+          -Dsonar.projectKey=Ruban-Adhesif_docker-tp
+          -Dsonar.organization=ruban-adhesif
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          --file simpleapi/pom.xml
 
   build-and-push-docker-image:
     needs: test-backend
