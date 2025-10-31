@@ -1,0 +1,4 @@
+# Exemple de fichier .vault_pass
+# Copiez ce fichier en .vault_pass et ajoutez votre mot de passe
+# NE COMMITEZ JAMAIS .vault_pass dans git !
+# Ajoutez-le dans .gitignore

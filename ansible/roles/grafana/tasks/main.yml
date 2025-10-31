@@ -1,0 +1,28 @@
+---
+- name: Create Grafana volume
+  community.docker.docker_volume:
+    name: grafana_data
+    state: present
+
+- name: Launch Grafana container
+  community.docker.docker_container:
+    name: grafana
+    image: grafana/grafana:latest
+    pull: yes
+    restart_policy: unless-stopped
+    env:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: ""
+    volumes:
+      - grafana_data:/var/lib/grafana
+    published_ports:
+      - "3000:3000"
+    networks:
+      - name: "{{ front_network }}"
+    state: started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

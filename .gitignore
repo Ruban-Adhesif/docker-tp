@@ -39,4 +39,8 @@ node_modules/
 *.tmp
 *.temp
 
-*.tar
+# Ansible Vault
+ansible/vault/.vault_pass
+ansible/vault/secrets.yml.decrypted
+ansible/data/id_rsa
+ansible/data/id_rsa.pub

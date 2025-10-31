@@ -1,0 +1,56 @@
+---
+- name: Launch backend-blue container
+  community.docker.docker_container:
+    name: "{{ app_name }}-blue"
+    image: "{{ app_image }}"
+    pull: yes
+    restart_policy: unless-stopped
+    env:
+      POSTGRES_HOST: "{{ db_name }}"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "{{ db_name_var }}"
+      POSTGRES_USER: "{{ db_user }}"
+      POSTGRES_PASSWORD: "{{ db_password }}"
+    networks:
+      - name: "{{ back_network }}"
+        aliases:
+          - "{{ app_name }}-blue"
+          - "backend-blue"
+      - name: "{{ front_network }}"
+        aliases:
+          - "{{ app_name }}-blue"
+          - "backend-blue"
+    expose:
+      - "{{ app_port }}"
+    state: started
+    labels:
+      - "app=backend"
+      - "version=blue"
+
+- name: Launch backend-green container
+  community.docker.docker_container:
+    name: "{{ app_name }}-green"
+    image: "{{ app_image }}"
+    pull: yes
+    restart_policy: unless-stopped
+    env:
+      POSTGRES_HOST: "{{ db_name }}"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "{{ db_name_var }}"
+      POSTGRES_USER: "{{ db_user }}"
+      POSTGRES_PASSWORD: "{{ db_password }}"
+    networks:
+      - name: "{{ back_network }}"
+        aliases:
+          - "{{ app_name }}-green"
+          - "backend-green"
+      - name: "{{ front_network }}"
+        aliases:
+          - "{{ app_name }}-green"
+          - "backend-green"
+    expose:
+      - "{{ app_port }}"
+    state: started
+    labels:
+      - "app=backend"
+      - "version=green"

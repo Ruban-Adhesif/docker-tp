@@ -1,0 +1,34 @@
+---
+- hosts: all
+  gather_facts: false
+  become: false
+  
+  tasks:
+    - name: Pull latest backend image
+      community.docker.docker_image:
+        name: "{{ app_image }}"
+        source: pull
+        
+    - name: Restart backend container
+      community.docker.docker_container:
+        name: "{{ app_name }}"
+        image: "{{ app_image }}"
+        pull: yes
+        restart_policy: unless-stopped
+        env:
+          POSTGRES_HOST: "{{ db_name }}"
+          POSTGRES_PORT: "5432"
+          POSTGRES_DB: "{{ db_name_var }}"
+          POSTGRES_USER: "{{ db_user }}"
+          POSTGRES_PASSWORD: "{{ db_password }}"
+        networks:
+          - name: "{{ back_network }}"
+            aliases:
+              - "{{ app_name }}"
+          - name: "{{ front_network }}"
+            aliases:
+              - "{{ app_name }}"
+        expose:
+          - "{{ app_port }}"
+        state: started
+        force_restart: yes
